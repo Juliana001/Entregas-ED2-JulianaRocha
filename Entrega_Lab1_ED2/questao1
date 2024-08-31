@@ -8,14 +8,14 @@ O código abaixo realiza a impressão do vetor na ordem inversa.
 
 int main() {
     int n;
-    scanf("%d", &n);
-    int vetor[n];
+    scanf("%d", &n); // o usuario escolhe o tamanho do vetor
+    int vetor[n]; // vetor é criado no tamanho escolhido
     int i, temp;
     for(i=0; i<n;i++){
-        scanf("%d", &vetor[i]);
+        scanf("%d", &vetor[i]); // os valores que o usuário escolhe são inseridos no vetor 
     }
     
-     for (i = 0; i < n/2; i++) {
+     for (i = 0; i < n/2; i++) { // inverte  o vetor
         temp = vetor[i];
         vetor[i] = vetor[(n - 1) - i];
         vetor[(n-1) - i] = temp;
