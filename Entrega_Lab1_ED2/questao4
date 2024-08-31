@@ -46,7 +46,7 @@ void printList() {
     printf("\n");
 }
 
-void buscar(int elemento){
+void buscar(int elemento){ //funçao para buscar o valor que o usuário deseja
     Node* temp = head;                            
     while (temp != NULL) {                       
         if (temp->data == elemento) {                
@@ -70,7 +70,7 @@ void buscar(int elemento){
 int main() {
     int key = 0;
     int n,m;
-    while(key ==0){
+    while(key ==0){ // usuario insere valores 
         printf("Digite o valor a ser inserido: ");
         scanf("%d", &n);
         insertFront(n);
@@ -81,7 +81,7 @@ int main() {
     printList();
     printf("Deseja buscar algum elemento? Digite 1 para sim e 2 para nao: ");
     scanf("%d", &key);
-    if(key==1){
+    if(key==1){ //controle de busca
         printf("Digite o valor a ser buscado: ");
         scanf("%d", &m);
         buscar(m);
