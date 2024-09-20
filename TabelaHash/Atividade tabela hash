@@ -1,0 +1,87 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TAMANHO_HASH 10
+
+// Estrutura para representar uma leitura
+typedef struct {
+    int id;     
+    float temperatura;
+    float pressao;
+    float vibracao;
+    int hora;
+    char status[6];
+} Leitura;
+
+// Estrutura da Tabela Hash
+typedef struct {
+    Leitura *tabela[TAMANHO_HASH];  // Array de ponteiros para armazenar leituras
+} TabelaHash;
+
+// Função Hash: Retorna o índice baseado no ID da leitura
+int funcao_hash(int id) {
+    return id % TAMANHO_HASH;  // Usa módulo para determinar a posição na tabela
+}
+
+// Função para inserir uma leitura na tabela hash
+void inserir(TabelaHash *tabela, Leitura *leitura) {
+    int indice = funcao_hash(leitura->id);  // Calcula o índice baseado no ID
+    tabela->tabela[indice] = leitura;  // Insere a leitura na tabela
+}
+
+// Função para buscar uma transação na tabela hash pelo ID
+Leitura *buscar(TabelaHash *tabela, int id) {
+    int indice = funcao_hash(id);  // Calcula o índice para busca
+    return tabela->tabela[indice];  // Retorna a transação encontrada
+}
+
+void remocao(TabelaHash *tabela, int id, int index){
+    if(index < 0 || index > TAMANHO_HASH){
+        printf("Índice inválido");
+        return;
+    }
+    
+    if (tabela[index] != NULL && tabela[index]->id == id) {
+        
+        free(tabela[index]);  
+        tabela[index] = NULL;
+        printf("Elemento removido com sucesso.\n");
+    } else {
+        printf("Elemento não encontrado no índice especificado.\n");
+    }
+    
+}
+
+
+// Função principal para demonstrar o uso da tabela hash com transações financeiras
+int main() {
+    // Inicializa a tabela hash
+    TabelaHash tabela = {NULL};
+
+    // Criação de algumas leituras
+    Leitura leitura1 = {101, 100.50, 1.10,19,48605, "normal"};
+    Leitura leitura2 = {102, 250.75, 1.08,20,48606, "falha"};
+    Leitura leitura3 = {103, 270.4, 1, 18,48607, "normal"};
+
+    // Insere as transações na tabela hash
+    inserir(&tabela, &leitura1);
+    inserir(&tabela, &leitura2);
+    inserir(&tabela, &leitura3);
+    
+    remocao(&tabela, 1001, 3)
+    // Busca por uma transação específica
+    Leitura *l = buscar(&tabela, 105);
+    if (l != NULL) {
+        printf("Leitura encontrada: ID: %d, Temperatura: %.2f, Pressão: %.2f, , Vibração: %.2f, Status: %s\n",
+               l->id, l->temperatura, l->pressao, l->vibracao, l->hora, l->status);
+    } else {
+        printf("Leitura não encontrada.\n");
+    }
+
+    // // Exibir todas as transações suspeitas
+    // printf("\nTransações suspeitas:\n");
+    // exibir_suspeitas(&tabela);
+
+return 0;
+}
