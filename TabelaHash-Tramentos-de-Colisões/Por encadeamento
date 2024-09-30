@@ -1,1 +1,185 @@
-gvgnh
+//Juliana do Nascimento Rocha 202201645
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TAMANHO_HASH 10
+
+// Estrutura para representar uma transação financeira
+typedef struct Leitura{
+    int id;     
+    float temperatura;
+    float pressao;
+    float vibracao;
+    int hora;
+    char status[10];
+    struct Leitura *proximo;
+} Leitura;
+
+// Estrutura da Tabela Hash
+typedef struct {
+    Leitura *tabela[TAMANHO_HASH];  // Array de ponteiros para o início da lista ligada
+} TabelaHash;
+
+// Função Hash: Retorna o índice baseado no ID da transação
+int funcao_hash(int id) {
+    return id % TAMANHO_HASH;  // Usa módulo para determinar a posição na tabela
+}
+
+// Função para criar uma nova transação
+Leitura *criar_leitura(int id, float temperatura, float pressao, float vibracao, int hora, const char *status) {
+    Leitura *nova_leitura = (Leitura *)malloc(sizeof(Leitura));
+    if (nova_leitura == NULL) {
+        printf("Erro ao alocar memória!\n");
+        exit(1);
+    }
+    nova_leitura->id = id;
+    nova_leitura->temperatura = temperatura;
+    nova_leitura->pressao = pressao;
+    nova_leitura->vibracao = vibracao;
+    nova_leitura->hora = hora;
+    strcpy(nova_leitura->status, status);
+    nova_leitura->proximo = NULL;
+    return nova_leitura;
+}
+
+// Função para inserir uma transação na tabela hash (usando listas ligadas para colisões)
+void inserir(TabelaHash *tabela, Leitura *leitura) {
+    int indice = funcao_hash(leitura->id);  // Calcula o índice baseado no ID
+    leitura->proximo = tabela->tabela[indice];  // Insere no início da lista ligada
+    tabela->tabela[indice] = leitura;
+}
+
+// Função para exibir todas as transações
+void exibir_todas(TabelaHash *tabela) {
+    for (int i = 0; i < TAMANHO_HASH; i++) {
+        Leitura *atual = tabela->tabela[i];
+        while (atual != NULL) {
+            printf("Leitura ID: %d, temperatura: %.2f, pressao: %.2f, vibracao: %.2f, hora: %d, status: %s (Índice: %d)\n",
+                   atual->id, atual->temperatura, atual->pressao, atual->vibracao, atual->hora, atual->status, i);
+            atual = atual->proximo;  // Avança para a próxima transação
+        }
+    }
+}
+
+// Função para buscar uma transação na tabela hash pelo ID
+Leitura *buscar(TabelaHash *tabela, int id, int hora) {
+    int indice = funcao_hash(id);  // Calcula o índice para busca
+    Leitura *atual = tabela->tabela[indice];
+    
+    while (atual != NULL) {
+        if (atual->id == id) {
+            return atual;  // Retorna a transação se encontrada
+        }
+        atual = atual->proximo;  // Vai para a próxima transação na lista ligada
+    }
+    return NULL;  // Retorna NULL se não for encontrada
+}
+
+// Função para excluir uma transação na tabela hash pelo ID
+void excluir(TabelaHash *tabela, int id, int hora) {
+    int indice = funcao_hash(id);  // Calcula o índice para exclusão
+    Leitura *atual = tabela->tabela[indice];
+    Leitura *anterior = NULL;
+
+    while (atual != NULL) {
+        if (atual->id == id) {
+            // Se o elemento a ser removido for o primeiro da lista
+            if (anterior == NULL) {
+                tabela->tabela[indice] = atual->proximo;  // Remove o primeiro elemento
+            } else {
+                anterior->proximo = atual->proximo;  // Remove o elemento no meio ou fim
+            }
+            free(atual);  // Libera a memória da transação
+            printf("Leitura da máquina de ID %d foi excluída.\n", id);
+            return;
+        }
+        anterior = atual;
+        atual = atual->proximo;
+    }
+    printf("Leitura da máquina de ID %d não encontrada para exclusão.\n", id);
+}
+
+// Função para contar o número total de elementos (transações) na tabela hash
+int contar_elementos(TabelaHash *tabela) {
+    int total = 0;
+
+    // Percorre todas as posições da tabela hash
+    for (int i = 0; i < TAMANHO_HASH; i++) {
+        Leitura *atual = tabela->tabela[i];
+
+        // Percorre a lista ligada em cada posição
+        while (atual != NULL) {
+            total++;  // Incrementa o contador para cada transação encontrada
+            atual = atual->proximo;  // Vai para o próximo elemento na lista
+        }
+    }
+
+    return total;
+}
+
+
+// Função para inserir 20 transações predefinidas na tabela hash
+void inserir_dados_predefinidos(TabelaHash *tabela) {
+    // Inserindo transações diretamente
+    
+    inserir(tabela, criar_leitura(1001, 152.5, 13.2, 10, 13000, "normal"));
+    inserir(tabela, criar_leitura(1002, 145.3, 14.5, 12, 12500, "normal"));
+    inserir(tabela, criar_leitura(1003, 158.7, 16.1, 11, 13200, "falha"));
+    inserir(tabela, criar_leitura(1004, 150.2, 13.9, 9, 12800, "normal"));
+    inserir(tabela, criar_leitura(1005, 147.5, 14.3, 10, 12650, "normal"));
+    inserir(tabela, criar_leitura(1006, 160.8, 15.6, 13, 13400, "falha"));
+    inserir(tabela, criar_leitura(1007, 149.9, 13.8, 11, 12750, "normal"));
+    inserir(tabela, criar_leitura(1008, 152.1, 14.2, 10, 13050, "normal"));
+    inserir(tabela, criar_leitura(1009, 162.4, 16.5, 12, 13600, "falha"));
+    inserir(tabela, criar_leitura(1010, 148.7, 13.7, 10, 12600, "normal"));
+    inserir(tabela, criar_leitura(1011, 153.3, 15.0, 11, 13100, "normal"));
+    inserir(tabela, criar_leitura(1012, 157.6, 15.8, 13, 13500, "falha"));
+    inserir(tabela, criar_leitura(1013, 151.4, 13.6, 9, 12900, "normal"));
+    inserir(tabela, criar_leitura(1014, 159.0, 15.3, 12, 13300, "falha"));
+    inserir(tabela, criar_leitura(1015, 146.8, 14.0, 11, 12700, "normal"));
+    inserir(tabela, criar_leitura(1016, 155.2, 14.9, 10, 13250, "normal"));
+
+
+
+    printf("Leituras foram inseridas com sucesso.\n");
+}
+
+
+// Função principal para demonstrar o uso da tabela hash com transações financeiras
+int main() {
+    // Inicializa a tabela hash
+    TabelaHash tabela = {NULL};
+
+    // Inserir os dados predefinidos na tabela hash
+    inserir_dados_predefinidos(&tabela);
+    
+    // Exibir todas as transações inseridas
+    printf("\nTodas as leituras foram inseridas: %d\n", contar_elementos(&tabela));
+    exibir_todas(&tabela);
+
+    
+    // Busca por uma transação específica
+    printf("\nBuscar uma leitura:\n");
+    Leitura *t = buscar(&tabela, 1002, 12500);
+    if (t != NULL) {
+        printf("Leitura encontrada: ID: %d, Status: %s\n",
+               t->id, t->status);
+    } else {
+        printf("leitura não encontrada.\n");
+    }
+    
+    
+    // Excluir as transações selecionadas
+    printf("\nLeituras excluidas:\n");
+    excluir(&tabela, 1010, 12600);
+    
+    
+    // Exibir todas as transações inseridas
+    printf("\nLeituras Atualizadas: %d\n", contar_elementos(&tabela));
+    exibir_todas(&tabela);
+    
+
+    return 0;
+}
