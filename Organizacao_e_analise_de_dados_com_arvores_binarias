@@ -1,0 +1,155 @@
+//Juliana do Nascimento Rocha
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct usuario {
+    int id_usuario;
+    int curtidas;
+    int comentarios;
+    struct usuario *esquerda, *direita;
+} Usuario;
+
+typedef struct {
+    Usuario *raiz;
+} ArvB;
+
+
+Usuario* criarUsuario(int id, int curtidas, int comentarios) {
+    Usuario *novo = (Usuario*)malloc(sizeof(Usuario));
+    novo->id_usuario = id;
+    novo->curtidas = curtidas;
+    novo->comentarios = comentarios;
+    novo->esquerda = novo->direita = NULL;
+    return novo;
+}
+
+
+Usuario* inserirUsuario(Usuario* raiz, int id, int curtidas, int comentarios) {
+    if (raiz == NULL) {
+        return criarUsuario(id, curtidas, comentarios);
+    }
+    int totalInteracoesRaiz = raiz->curtidas + raiz->comentarios;
+    int totalInteracoesNovo = curtidas + comentarios;
+    if (totalInteracoesNovo < totalInteracoesRaiz) {
+        raiz->esquerda = inserirUsuario(raiz->esquerda, id, curtidas, comentarios);
+    } else {
+        raiz->direita = inserirUsuario(raiz->direita, id, curtidas, comentarios);
+    }
+    return raiz;
+}
+
+
+Usuario* buscarUsuario(Usuario* raiz, int id) {
+    if (raiz == NULL) {
+        printf("\nUsuário com ID %d não encontrado.\n", id);
+        return NULL;
+    }
+    
+    if (raiz->id_usuario == id) {
+        printf("\nUsuário %d encontrado: %d curtidas e %d comentários.\n", raiz->id_usuario, raiz->curtidas, raiz->comentarios);
+        return raiz;
+    }
+    
+    if (id < raiz->id_usuario) {
+        return buscarUsuario(raiz->esquerda, id);
+    } else {
+        return buscarUsuario(raiz->direita, id);
+    }
+}
+
+
+
+void exibirMaisEngajados(Usuario* raiz) {
+    if (raiz != NULL) {
+        exibirMaisEngajados(raiz->direita);
+        printf("ID: %d, Curtidas: %d, Comentarios: %d, Total de interacoes: %d\n", 
+               raiz->id_usuario, raiz->curtidas, raiz->comentarios, 
+               raiz->curtidas + raiz->comentarios);
+        exibirMaisEngajados(raiz->esquerda);
+    }
+}
+
+
+Usuario* encontrarMinimo(Usuario* raiz) {
+    while (raiz->esquerda != NULL) {
+        raiz = raiz->esquerda;
+    }
+    return raiz;
+}
+
+
+Usuario* removerUsuario(Usuario* raiz, int id) {
+    if (raiz == NULL) return NULL;
+    
+    if (id < raiz->id_usuario) {
+        raiz->esquerda = removerUsuario(raiz->esquerda, id);
+    } else if (id > raiz->id_usuario) {
+        raiz->direita = removerUsuario(raiz->direita, id);
+    } else {
+        if (raiz->esquerda == NULL) {
+            Usuario *temp = raiz->direita;
+            free(raiz);
+            return temp;
+        } else if (raiz->direita == NULL) {
+            Usuario *temp = raiz->esquerda;
+            free(raiz);
+            return temp;
+        }
+        
+        Usuario *temp = encontrarMinimo(raiz->direita);
+        raiz->id_usuario = temp->id_usuario;
+        raiz->curtidas = temp->curtidas;
+        raiz->comentarios = temp->comentarios;
+        raiz->direita = removerUsuario(raiz->direita, temp->id_usuario);
+    }
+    return raiz;
+}
+
+
+void atualizarInteracoes(ArvB* arvore, int id, int curtidas, int comentarios) {
+    
+    arvore->raiz = removerUsuario(arvore->raiz, id);
+    arvore->raiz = inserirUsuario(arvore->raiz, id, curtidas, comentarios);
+}
+
+int main() {
+    ArvB arvore;
+    arvore.raiz = NULL;
+
+   
+    arvore.raiz = inserirUsuario(arvore.raiz, 101, 10, 5);
+    arvore.raiz = inserirUsuario(arvore.raiz, 102, 15, 7);
+    arvore.raiz = inserirUsuario(arvore.raiz, 103, 20, 10);
+
+    
+    printf("Usuários mais engajados:\n");
+    exibirMaisEngajados(arvore.raiz);
+
+    
+    printf("\nAtualizando interações do usuário com ID 102.\n");
+    atualizarInteracoes(&arvore, 102, 30, 20);
+
+   
+    printf("Usuários mais engajados após atualização:\n");
+    exibirMaisEngajados(arvore.raiz);
+
+    
+    printf("\nRemovendo o usuário com ID 101.\n");
+    arvore.raiz = removerUsuario(arvore.raiz, 101);
+
+    
+    printf("\nUsuários mais engajados após remoção:\n");
+    exibirMaisEngajados(arvore.raiz);
+    
+    arvore.raiz = inserirUsuario(arvore.raiz, 104, 50, 70);
+    
+    printf("\nUsuário mais engajado após nova inserção: \n");
+    exibirMaisEngajados(arvore.raiz);
+    
+    buscarUsuario(arvore.raiz, 105);
+    buscarUsuario(arvore.raiz, 101);
+    buscarUsuario(arvore.raiz, 103);
+
+    return 0;
+}
